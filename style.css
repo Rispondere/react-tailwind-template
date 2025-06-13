@@ -1,0 +1,728 @@
+/* ==========================================
+   キャスト収入プランシミュレーター - スタイルシート
+   ========================================== */
+
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本設定 */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #fef3c7, #ffffff, #fed7aa);
+    min-height: 100vh;
+    color: #374151;
+    line-height: 1.6;
+}
+
+/* ヘッダー */
+.header {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: white;
+    padding: 2rem 1rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* コンテナ */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+/* カード */
+.card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card h2, .card h3 {
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+/* 入力エリア */
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-group label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.input-group input, .input-group select {
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.input-group input:focus, .input-group select:focus {
+    outline: none;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.input-group input:hover, .input-group select:hover {
+    border-color: #d1d5db;
+}
+
+.input-group small {
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+
+/* スライダー */
+.slider-container {
+    position: relative;
+}
+
+.slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: #e5e7eb;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.slider:hover {
+    background: #d1d5db;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f59e0b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-webkit-slider-thumb:hover {
+    background: #d97706;
+    transform: scale(1.1);
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f59e0b;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider-value {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #f59e0b;
+    margin-top: 0.5rem;
+}
+
+/* 結果表示エリア */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.result-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 収入表示 */
+.income-display {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.income-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #059669;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.income-label {
+    color: #6b7280;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.income-breakdown {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    margin-top: 0.5rem;
+}
+
+/* 統計行 */
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    transition: background 0.3s ease;
+}
+
+.stat-row:hover {
+    background: #f3f4f6;
+}
+
+.stat-value {
+    font-weight: bold;
+}
+
+.stat-value.positive {
+    color: #059669;
+}
+
+.stat-value.negative {
+    color: #dc2626;
+}
+
+/* アラート */
+.alert {
+    padding: 0.75rem;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    animation: slideIn 0.3s ease;
+}
+
+.alert-text {
+    color: #92400e;
+    font-weight: 500;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* プログレスバー */
+.progress-bar {
+    width: 100%;
+    height: 1rem;
+    background: #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #3b82f6);
+    transition: width 1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    position: relative;
+}
+
+.progress-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-text {
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+/* レベル表示 */
+.level-display {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.level-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.level-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.level-description {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.level-item {
+    padding: 0.5rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.level-item:hover {
+    transform: scale(1.05);
+}
+
+.level-bronze { 
+    background: #fed7aa; 
+    color: #ea580c; 
+    border: 2px solid #f97316;
+}
+
+.level-silver { 
+    background: #f3f4f6; 
+    color: #6b7280; 
+    border: 2px solid #9ca3af;
+}
+
+.level-gold { 
+    background: #fef3c7; 
+    color: #d97706; 
+    border: 2px solid #f59e0b;
+}
+
+.level-platinum { 
+    background: #f3e8ff; 
+    color: #8b5cf6; 
+    border: 2px solid #a855f7;
+}
+
+/* モチベーションボックス */
+.motivation-box {
+    background: linear-gradient(135deg, #e9d5ff, #fce7f3);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    border: 2px solid #d8b4fe;
+    animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+.motivation-text {
+    color: #7c3aed;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* チャートコンテナ */
+.chart-container {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+    margin-top: 1rem;
+}
+
+/* アドバイスエリア */
+.advice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.advice-card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.advice-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.advice-income { 
+    background: #f0fdf4; 
+    border-color: #10b981; 
+}
+
+.advice-savings { 
+    background: #eff6ff; 
+    border-color: #3b82f6; 
+}
+
+.advice-balance { 
+    background: #f5f3ff; 
+    border-color: #8b5cf6; 
+}
+
+.advice-goals { 
+    background: #fff7ed; 
+    border-color: #f97316; 
+}
+
+.advice-title {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.advice-income .advice-title { color: #065f46; }
+.advice-savings .advice-title { color: #1e3a8a; }
+.advice-balance .advice-title { color: #5b21b6; }
+.advice-goals .advice-title { color: #9a3412; }
+
+.advice-list {
+    list-style: none;
+    padding: 0;
+}
+
+.advice-list li {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    color: #374151;
+    transition: color 0.3s ease;
+}
+
+.advice-list li:hover {
+    color: #1f2937;
+}
+
+/* ボタンエリア */
+.button-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-blue { 
+    background: linear-gradient(135deg, #3b82f6, #2563eb); 
+}
+
+.btn-blue:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8); 
+}
+
+.btn-green { 
+    background: linear-gradient(135deg, #10b981, #059669); 
+}
+
+.btn-green:hover {
+    background: linear-gradient(135deg, #059669, #047857); 
+}
+
+.btn-purple { 
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
+}
+
+.btn-purple:hover {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9); 
+}
+
+/* フッター */
+.footer {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+/* ノート・説明文 */
+.note {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 1rem;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .header p {
+        font-size: 1rem;
+    }
+    
+    .container {
+        padding: 1rem;
+    }
+    
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .income-amount {
+        font-size: 2rem;
+    }
+    
+    .button-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+        max-width: 300px;
+    }
+    
+    .advice-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .level-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .chart-wrapper {
+        height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 1rem;
+    }
+    
+    .result-card {
+        padding: 1rem;
+    }
+    
+    .income-amount {
+        font-size: 1.8rem;
+    }
+    
+    .level-icon {
+        font-size: 2.5rem;
+    }
+    
+    .level-name {
+        font-size: 1.3rem;
+    }
+    
+    .chart-wrapper {
+        height: 200px;
+    }
+}
+
+/* 印刷用スタイル */
+@media print {
+    .header {
+        background: #f59e0b !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+    }
+    
+    .card, .result-card, .chart-container {
+        box-shadow: none;
+        border: 1px solid #e5e7eb;
+        break-inside: avoid;
+    }
+    
+    .btn {
+        display: none;
+    }
+    
+    .chart-wrapper {
+        height: 250px;
+    }
+    
+    body {
+        background: white !important;
+    }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* フォーカス表示の改善 */
+.btn:focus,
+input:focus,
+select:focus {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+    /* 必要に応じてダークモードスタイルを追加 */
+}
+
+/* スクロールバーのカスタマイズ */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #f59e0b;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #d97706;
+}
