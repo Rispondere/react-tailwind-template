@@ -4,391 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>キャスト収入プランシミュレーター</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #fef3c7, #ffffff, #fed7aa);
-            min-height: 100vh;
-            color: #374151;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #f59e0b, #ea580c);
-            color: white;
-            padding: 2rem 1rem;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
-
-        .card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .card h2, .card h3 {
-            color: #1f2937;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .input-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .input-group label {
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.9rem;
-        }
-
-        .input-group input, .input-group select {
-            padding: 0.75rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .input-group input:focus, .input-group select:focus {
-            outline: none;
-            border-color: #f59e0b;
-        }
-
-        .slider-container {
-            position: relative;
-        }
-
-        .slider {
-            width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            background: #e5e7eb;
-            outline: none;
-            appearance: none;
-        }
-
-        .slider::-webkit-slider-thumb {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #f59e0b;
-            cursor: pointer;
-        }
-
-        .slider-value {
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #f59e0b;
-            margin-top: 0.5rem;
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .result-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-        }
-
-        .income-display {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .income-amount {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #059669;
-            margin-bottom: 0.5rem;
-        }
-
-        .income-label {
-            color: #6b7280;
-            font-size: 1rem;
-        }
-
-        .income-breakdown {
-            font-size: 0.9rem;
-            color: #9ca3af;
-            margin-top: 0.5rem;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            background: #f9fafb;
-            border-radius: 0.5rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .stat-value {
-            font-weight: bold;
-        }
-
-        .stat-value.positive {
-            color: #059669;
-        }
-
-        .stat-value.negative {
-            color: #dc2626;
-        }
-
-        .alert {
-            padding: 0.75rem;
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            border-radius: 0.5rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .alert-text {
-            color: #92400e;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 1rem;
-            background: #e5e7eb;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            margin-bottom: 0.75rem;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #3b82f6);
-            transition: width 1s ease;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 0.5rem;
-        }
-
-        .progress-text {
-            color: white;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .level-display {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .level-icon {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .level-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-        }
-
-        .level-description {
-            color: #6b7280;
-        }
-
-        .level-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .level-item {
-            padding: 0.5rem;
-            text-align: center;
-            border-radius: 0.5rem;
-            font-size: 0.8rem;
-        }
-
-        .level-bronze { background: #fed7aa; color: #ea580c; }
-        .level-silver { background: #f3f4f6; color: #6b7280; }
-        .level-gold { background: #fef3c7; color: #d97706; }
-        .level-platinum { background: #f3e8ff; color: #8b5cf6; }
-
-        .motivation-box {
-            background: linear-gradient(135deg, #e9d5ff, #fce7f3);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        .motivation-text {
-            color: #7c3aed;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .chart-container {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
-            margin-top: 1rem;
-        }
-
-        .advice-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-
-        .advice-card {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border-left: 4px solid;
-        }
-
-        .advice-income { background: #f0fdf4; border-color: #10b981; }
-        .advice-savings { background: #eff6ff; border-color: #3b82f6; }
-        .advice-balance { background: #f5f3ff; border-color: #8b5cf6; }
-        .advice-goals { background: #fff7ed; border-color: #f97316; }
-
-        .advice-title {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-
-        .advice-income .advice-title { color: #065f46; }
-        .advice-savings .advice-title { color: #1e3a8a; }
-        .advice-balance .advice-title { color: #5b21b6; }
-        .advice-goals .advice-title { color: #9a3412; }
-
-        .advice-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .advice-list li {
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-            color: #374151;
-        }
-
-        .button-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 1rem;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
-        }
-
-        .btn-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .btn-green { background: linear-gradient(135deg, #10b981, #059669); }
-        .btn-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-
-        .footer {
-            text-align: center;
-            padding: 2rem;
-            color: #6b7280;
-            font-size: 0.9rem;
-        }
-
-        .note {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #6b7280;
-            margin-top: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .input-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .income-amount {
-                font-size: 2rem;
-            }
-            
-            .button-grid {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- ヘッダー -->
@@ -429,6 +46,12 @@
                 </div>
 
                 <div class="input-group">
+                    <label for="livingExpenses">月の生活費（円）</label>
+                    <input type="number" id="livingExpenses" value="200000" min="50000" step="10000">
+                    <small style="color: #6b7280;">最低限必要な生活費</small>
+                </div>
+
+                <div class="input-group">
                     <label for="savingsTarget">貯金目標（円）</label>
                     <input type="number" id="savingsTarget" value="3000000" min="500000" step="100000">
                     <small style="color: #6b7280;">将来の貯金目標</small>
@@ -463,6 +86,11 @@
                     <span class="stat-value" id="targetDifference">+¥40,000</span>
                 </div>
 
+                <div class="stat-row">
+                    <span>生活費差し引き後</span>
+                    <span class="stat-value" id="disposableIncome">¥340,000</span>
+                </div>
+
                 <div id="alertBox" class="alert" style="display: none;">
                     <p class="alert-text" id="alertText">💡 目標達成まであと●本必要です！</p>
                 </div>
@@ -491,19 +119,19 @@
                     <div class="level-grid">
                         <div class="level-item level-bronze">
                             <div style="font-weight: bold;">ブロンズ</div>
-                            <div>〜40万</div>
+                            <div>〜80万</div>
                         </div>
                         <div class="level-item level-silver">
                             <div style="font-weight: bold;">シルバー</div>
-                            <div>40-60万</div>
+                            <div>80-120万</div>
                         </div>
                         <div class="level-item level-gold">
                             <div style="font-weight: bold;">ゴールド</div>
-                            <div>60-80万</div>
+                            <div>120-160万</div>
                         </div>
                         <div class="level-item level-platinum">
                             <div style="font-weight: bold;">プラチナ</div>
-                            <div>80万〜</div>
+                            <div>160万〜</div>
                         </div>
                     </div>
                 </div>
@@ -513,14 +141,18 @@
                 </div>
 
                 <div class="stat-row">
+                    <span>実際の貯金可能額</span>
+                    <span id="actualSavings">¥340,000</span>
+                </div>
+                <div class="stat-row">
                     <span>貯金目標まで</span>
-                    <span id="savingsMonths">56ヶ月</span>
+                    <span id="savingsMonths">9ヶ月</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="savingsProgress" style="width: 21%; background: linear-gradient(90deg, #8b5cf6, #ec4899);"></div>
                 </div>
                 <div class="note">
-                    年間貯金: <span id="annualSavings">¥6,480,000</span>
+                    年間貯金見込: <span id="annualSavings">¥4,080,000</span>
                 </div>
             </div>
         </div>
@@ -542,7 +174,7 @@
                 <canvas id="savingsChart"></canvas>
             </div>
             <div class="note">
-                5年後予想貯金: <span id="fiveYearSavings">¥32,400,000</span>
+                5年後予想貯金: <span id="fiveYearSavings">¥20,400,000</span>
             </div>
         </div>
 
@@ -553,8 +185,10 @@
                 <div class="advice-card advice-income">
                     <h4 class="advice-title">📈 収入アップのコツ</h4>
                     <ul class="advice-list">
+                        <li>• 写メ日記を毎日更新して認知度UP</li>
+                        <li>• オキニトークで距離を縮める</li>
+                        <li>• キテネで来店を促進する</li>
                         <li>• 本指名のお客様を大切にする</li>
-                        <li>• 接客スキルを磨き続ける</li>
                         <li>• 出勤日数を安定させる</li>
                         <li>• イベント時は積極的に参加</li>
                     </ul>
@@ -562,10 +196,11 @@
                 <div class="advice-card advice-savings">
                     <h4 class="advice-title">💰 貯金のコツ</h4>
                     <ul class="advice-list">
+                        <li>• 生活費を把握して無駄遣いを減らす</li>
                         <li>• 収入の20-30%を自動積立</li>
                         <li>• 家計簿をつけて支出を管理</li>
                         <li>• 将来の目標を明確にする</li>
-                        <li>• 投資についても勉強する</li>
+                        <li>• 複数の口座で目的別に分ける</li>
                     </ul>
                 </div>
                 <div class="advice-card advice-balance">
@@ -575,6 +210,7 @@
                         <li>• 健康管理を怠らない</li>
                         <li>• プライベートも充実させる</li>
                         <li>• 将来のキャリアプランを考える</li>
+                        <li>• ストレス発散方法を見つける</li>
                     </ul>
                 </div>
                 <div class="advice-card advice-goals">
@@ -584,6 +220,7 @@
                         <li>• 短期・中期・長期に分けて考える</li>
                         <li>• 定期的に見直しを行う</li>
                         <li>• 達成したらご褒美を設ける</li>
+                        <li>• 数値で管理して可視化する</li>
                     </ul>
                 </div>
             </div>
@@ -614,342 +251,6 @@
         <p>© 2025 キャスト収入プランシミュレーター - あなたの未来をサポート</p>
     </div>
 
-    <script>
-        // グローバル変数
-        let incomeChart, savingsChart;
-        
-        // 初期化
-        document.addEventListener('DOMContentLoaded', function() {
-            // イベントリスナーを設定
-            setupEventListeners();
-            // 初期計算
-            calculateResults();
-            // グラフ初期化
-            initCharts();
-        });
-
-        function setupEventListeners() {
-            const inputs = ['dailyCount', 'pricePerService', 'workDays', 'monthlyTarget', 'savingsTarget', 'targetPeriod'];
-            
-            inputs.forEach(id => {
-                const element = document.getElementById(id);
-                element.addEventListener('input', function() {
-                    if (id === 'workDays') {
-                        document.getElementById('workDaysValue').textContent = this.value + '日';
-                    }
-                    calculateResults();
-                    updateCharts();
-                });
-            });
-        }
-
-        function calculateResults() {
-            // 入力値を取得
-            const dailyCount = parseInt(document.getElementById('dailyCount').value) || 0;
-            const pricePerService = parseInt(document.getElementById('pricePerService').value) || 0;
-            const workDays = parseInt(document.getElementById('workDays').value) || 0;
-            const monthlyTarget = parseInt(document.getElementById('monthlyTarget').value) || 0;
-            const savingsTarget = parseInt(document.getElementById('savingsTarget').value) || 0;
-
-            // 計算
-            const monthlyIncome = dailyCount * pricePerService * workDays;
-            const yearlyIncome = monthlyIncome * 12;
-            const targetDifference = monthlyIncome - monthlyTarget;
-            const neededServices = Math.ceil((monthlyTarget - monthlyIncome) / pricePerService);
-            const savingsMonths = Math.ceil(savingsTarget / monthlyIncome);
-            const achievementRate = (monthlyIncome / monthlyTarget) * 100;
-
-            // 表示を更新
-            updateDisplay(monthlyIncome, yearlyIncome, targetDifference, neededServices, savingsMonths, achievementRate, dailyCount, pricePerService, workDays);
-        }
-
-        function updateDisplay(monthlyIncome, yearlyIncome, targetDifference, neededServices, savingsMonths, achievementRate, dailyCount, pricePerService, workDays) {
-            // 月収表示
-            document.getElementById('monthlyIncome').textContent = '¥' + monthlyIncome.toLocaleString();
-            document.getElementById('incomeBreakdown').textContent = `${dailyCount}本 × ¥${pricePerService.toLocaleString()} × ${workDays}日`;
-            
-            // 目標との差額
-            const diffElement = document.getElementById('targetDifference');
-            if (targetDifference >= 0) {
-                diffElement.textContent = '+¥' + targetDifference.toLocaleString();
-                diffElement.className = 'stat-value positive';
-                document.getElementById('alertBox').style.display = 'none';
-            } else {
-                diffElement.textContent = '-¥' + Math.abs(targetDifference).toLocaleString();
-                diffElement.className = 'stat-value negative';
-                document.getElementById('alertBox').style.display = 'block';
-                document.getElementById('alertText').textContent = `💡 目標達成まであと${neededServices}本必要です！`;
-            }
-
-            // 達成率
-            document.getElementById('achievementRate').textContent = achievementRate.toFixed(1) + '%';
-            
-            // プログレスバー
-            const progressWidth = Math.min(achievementRate, 100);
-            document.getElementById('progressFill').style.width = progressWidth + '%';
-            if (achievementRate >= 10) {
-                document.getElementById('progressText').textContent = achievementRate.toFixed(0) + '%';
-            } else {
-                document.getElementById('progressText').textContent = '';
-            }
-
-            // レベル情報
-            updateLevelInfo(monthlyIncome);
-
-            // モチベーションメッセージ
-            updateMotivationMessage(achievementRate);
-
-            // 貯金情報
-            document.getElementById('savingsMonths').textContent = savingsMonths + 'ヶ月';
-            document.getElementById('annualSavings').textContent = '¥' + (monthlyIncome * 12).toLocaleString();
-            
-            // 貯金プログレス
-            const savingsProgress = Math.min((monthlyIncome * 12 / parseInt(document.getElementById('savingsTarget').value)) * 100, 100);
-            document.getElementById('savingsProgress').style.width = savingsProgress + '%';
-
-            // 年収表示
-            document.getElementById('yearlyIncome').textContent = '¥' + yearlyIncome.toLocaleString();
-            document.getElementById('fiveYearSavings').textContent = '¥' + (yearlyIncome * 5).toLocaleString();
-        }
-
-        function updateLevelInfo(monthlyIncome) {
-            let level, color, icon;
-            
-            if (monthlyIncome >= 800000) {
-                level = 'プラチナ';
-                color = '#8b5cf6';
-                icon = '👑';
-            } else if (monthlyIncome >= 600000) {
-                level = 'ゴールド';
-                color = '#f59e0b';
-                icon = '⭐';
-            } else if (monthlyIncome >= 400000) {
-                level = 'シルバー';
-                color = '#6b7280';
-                icon = '💎';
-            } else {
-                level = 'ブロンズ';
-                color = '#f97316';
-                icon = '🔥';
-            }
-
-            document.getElementById('levelIcon').textContent = icon;
-            document.getElementById('levelName').textContent = level + 'ランク';
-            document.getElementById('levelName').style.color = color;
-        }
-
-        function updateMotivationMessage(achievementRate) {
-            let message;
-            
-            if (achievementRate >= 100) {
-                message = '🎉 目標達成！素晴らしいペースです！';
-            } else if (achievementRate >= 80) {
-                message = '💪 あと少しで目標達成！頑張って！';
-            } else if (achievementRate >= 60) {
-                message = '📈 良いペースです！継続していきましょう';
-            } else {
-                message = '🚀 まだまだ伸びしろがあります！一緒に頑張りましょう';
-            }
-
-            document.getElementById('motivationText').textContent = message;
-        }
-
-        function initCharts() {
-            // 年間収入推移チャート
-            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-            const monthlyIncome = parseInt(document.getElementById('dailyCount').value) * 
-                                parseInt(document.getElementById('pricePerService').value) * 
-                                parseInt(document.getElementById('workDays').value);
-            const monthlyTarget = parseInt(document.getElementById('monthlyTarget').value);
-
-            incomeChart = new Chart(incomeCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-                    datasets: [{
-                        label: '予想収入',
-                        data: Array(12).fill(monthlyIncome),
-                        backgroundColor: '#f59e0b',
-                        borderColor: '#d97706',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }, {
-                        label: '目標金額',
-                        data: Array(12).fill(monthlyTarget),
-                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                        borderColor: '#dc2626',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ¥' + context.parsed.y.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '¥' + (value / 10000).toFixed(0) + '万';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // 貯金推移チャート
-            const savingsCtx = document.getElementById('savingsChart').getContext('2d');
-            const yearlyIncome = monthlyIncome * 12;
-
-            savingsChart = new Chart(savingsCtx, {
-                type: 'line',
-                data: {
-                    labels: ['1年目', '2年目', '3年目', '4年目', '5年目'],
-                    datasets: [{
-                        label: '累積貯金',
-                        data: [
-                            yearlyIncome,
-                            yearlyIncome * 2,
-                            yearlyIncome * 3,
-                            yearlyIncome * 4,
-                            yearlyIncome * 5
-                        ],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#10b981',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return '累積貯金: ¥' + context.parsed.y.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '¥' + (value / 10000).toFixed(0) + '万';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateCharts() {
-            if (!incomeChart || !savingsChart) return;
-
-            // 現在の値を取得
-            const monthlyIncome = parseInt(document.getElementById('dailyCount').value) * 
-                                parseInt(document.getElementById('pricePerService').value) * 
-                                parseInt(document.getElementById('workDays').value);
-            const monthlyTarget = parseInt(document.getElementById('monthlyTarget').value);
-            const yearlyIncome = monthlyIncome * 12;
-
-            // 年間収入チャートを更新
-            incomeChart.data.datasets[0].data = Array(12).fill(monthlyIncome);
-            incomeChart.data.datasets[1].data = Array(12).fill(monthlyTarget);
-            incomeChart.update();
-
-            // 貯金推移チャートを更新
-            savingsChart.data.datasets[0].data = [
-                yearlyIncome,
-                yearlyIncome * 2,
-                yearlyIncome * 3,
-                yearlyIncome * 4,
-                yearlyIncome * 5
-            ];
-            savingsChart.update();
-        }
-
-        function shareResults() {
-            const monthlyIncome = document.getElementById('monthlyIncome').textContent;
-            const achievementRate = document.getElementById('achievementRate').textContent;
-            const levelName = document.getElementById('levelName').textContent;
-            
-            const shareText = `💰 収入シミュレーション結果\n月収: ${monthlyIncome}\n目標達成率: ${achievementRate}\nランク: ${levelName}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'キャスト収入プランシミュレーター',
-                    text: shareText
-                }).catch(console.error);
-            } else if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareText).then(() => {
-                    alert('結果をクリップボードにコピーしました！');
-                }).catch(() => {
-                    alert('共有機能はサポートされていません。');
-                });
-            } else {
-                alert('共有機能はサポートされていません。');
-            }
-        }
-
-        function saveResults() {
-            const data = {
-                inputs: {
-                    dailyCount: document.getElementById('dailyCount').value,
-                    pricePerService: document.getElementById('pricePerService').value,
-                    workDays: document.getElementById('workDays').value,
-                    monthlyTarget: document.getElementById('monthlyTarget').value,
-                    savingsTarget: document.getElementById('savingsTarget').value,
-                    targetPeriod: document.getElementById('targetPeriod').value
-                },
-                results: {
-                    monthlyIncome: document.getElementById('monthlyIncome').textContent,
-                    achievementRate: document.getElementById('achievementRate').textContent,
-                    levelName: document.getElementById('levelName').textContent,
-                    savingsMonths: document.getElementById('savingsMonths').textContent
-                },
-                timestamp: new Date().toISOString()
-            };
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `income_simulation_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function printResults() {
-            window.print();
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
