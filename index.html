@@ -1,544 +1,955 @@
-import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Target, Calendar, DollarSign, Star, Award, Share2, Save, Printer } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キャスト収入プランシミュレーター</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-const CastIncomeSimulator = () => {
-  const [inputs, setInputs] = useState({
-    dailyCount: 3,
-    pricePerService: 12000,
-    workDaysPerMonth: 15,
-    monthlyTarget: 500000,
-    savingsTarget: 3000000,
-    targetPeriod: 12
-  });
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fef3c7, #ffffff, #fed7aa);
+            min-height: 100vh;
+            color: #374151;
+        }
 
-  const [results, setResults] = useState({});
+        .header {
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-  useEffect(() => {
-    calculateResults();
-  }, [inputs]);
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
 
-  const calculateResults = () => {
-    const monthlyIncome = inputs.dailyCount * inputs.pricePerService * inputs.workDaysPerMonth;
-    const yearlyIncome = monthlyIncome * 12;
-    const targetDifference = inputs.monthlyTarget - monthlyIncome;
-    const neededServices = Math.ceil(targetDifference / inputs.pricePerService);
-    const savingsMonths = Math.ceil(inputs.savingsTarget / monthlyIncome);
-    const achievementRate = (monthlyIncome / inputs.monthlyTarget) * 100;
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
 
-    setResults({
-      monthlyIncome,
-      yearlyIncome,
-      targetDifference,
-      neededServices,
-      savingsMonths,
-      achievementRate
-    });
-  };
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
 
-  const handleInputChange = (field, value) => {
-    setInputs(prev => ({
-      ...prev,
-      [field]: Number(value)
-    }));
-  };
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
 
-  const getMotivationMessage = () => {
-    const rate = results.achievementRate;
-    if (rate >= 100) return "🎉 目標達成！素晴らしいペースです！";
-    if (rate >= 80) return "💪 あと少しで目標達成！頑張って！";
-    if (rate >= 60) return "📈 良いペースです！継続していきましょう";
-    return "🚀 まだまだ伸びしろがあります！一緒に頑張りましょう";
-  };
+        .card h2, .card h3 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-  const getLevelInfo = () => {
-    const monthly = results.monthlyIncome;
-    if (monthly >= 800000) return { level: "プラチナ", color: "#8B5CF6", icon: "👑" };
-    if (monthly >= 600000) return { level: "ゴールド", color: "#F59E0B", icon: "⭐" };
-    if (monthly >= 400000) return { level: "シルバー", color: "#6B7280", icon: "💎" };
-    return { level: "ブロンズ", color: "#F97316", icon: "🔥" };
-  };
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
 
-  // チャート用データ
-  const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-    month: `${i + 1}月`,
-    income: results.monthlyIncome,
-    target: inputs.monthlyTarget
-  }));
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
 
-  const yearlyProjection = Array.from({ length: 5 }, (_, i) => ({
-    year: `${i + 1}年目`,
-    savings: results.monthlyIncome * 12 * (i + 1)
-  }));
+        .input-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
 
-  const workStyleData = [
-    { name: '本指名', value: 40, color: '#F59E0B' },
-    { name: '新規', value: 35, color: '#EF4444' },
-    { name: 'フリー', value: 15, color: '#10B981' },
-    { name: 'イベント', value: 10, color: '#8B5CF6' }
-  ];
+        .input-group input, .input-group select {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
 
-  const levelInfo = getLevelInfo();
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #f59e0b;
+        }
 
-  const handleShare = () => {
-    const text = `💰 収入シミュレーション結果\n月収: ¥${results.monthlyIncome?.toLocaleString()}\n目標達成率: ${results.achievementRate?.toFixed(1)}%\nランク: ${levelInfo.level}`;
-    if (navigator.share) {
-      navigator.share({
-        title: 'キャスト収入プランシミュレーター',
-        text: text
-      });
-    } else {
-      navigator.clipboard.writeText(text);
-      alert('結果をクリップボードにコピーしました！');
-    }
-  };
+        .slider-container {
+            position: relative;
+        }
 
-  const handleSave = () => {
-    const data = {
-      inputs,
-      results,
-      timestamp: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `income_simulation_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e5e7eb;
+            outline: none;
+            appearance: none;
+        }
 
-  const handlePrint = () => {
-    window.print();
-  };
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f59e0b;
+            cursor: pointer;
+        }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-      {/* ヘッダー */}
-      <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white py-6 px-4 shadow-lg">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-2">💰 キャスト収入プランシミュレーター</h1>
-          <p className="text-lg opacity-90">あなたの未来収入をシミュレーション！</p>
-        </div>
-      </div>
+        .slider-value {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #f59e0b;
+            margin-top: 0.5rem;
+        }
 
-      <div className="max-w-6xl mx-auto p-4 space-y-6">
-        {/* 入力セクション */}
-        <div className="bg-white rounded-2xl shadow-xl p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-            <TrendingUp className="mr-3 text-amber-500" />
-            収入設定
-          </h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">1日の平均本数</label>
-              <input
-                type="number"
-                value={inputs.dailyCount}
-                onChange={(e) => handleInputChange('dailyCount', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-amber-400 focus:outline-none text-lg"
-                min="1"
-                max="20"
-              />
-              <div className="text-xs text-gray-500">1〜20本</div>
-            </div>
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">1本あたりのバック額（円）</label>
-              <input
-                type="number"
-                value={inputs.pricePerService}
-                onChange={(e) => handleInputChange('pricePerService', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-amber-400 focus:outline-none text-lg"
-                min="1000"
-                step="1000"
-              />
-              <div className="text-xs text-gray-500">1,000円〜</div>
-            </div>
+        .result-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">月の出勤日数</label>
-              <input
-                type="range"
-                value={inputs.workDaysPerMonth}
-                onChange={(e) => handleInputChange('workDaysPerMonth', e.target.value)}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                min="5"
-                max="30"
-              />
-              <div className="text-center text-lg font-bold text-amber-600">{inputs.workDaysPerMonth}日</div>
-            </div>
+        .income-display {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">月の目標金額（円）</label>
-              <input
-                type="number"
-                value={inputs.monthlyTarget}
-                onChange={(e) => handleInputChange('monthlyTarget', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-amber-400 focus:outline-none text-lg"
-                min="100000"
-                step="50000"
-              />
-              <div className="text-xs text-gray-500">目標月収を入力</div>
-            </div>
+        .income-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #059669;
+            margin-bottom: 0.5rem;
+        }
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">貯金目標（円）</label>
-              <input
-                type="number"
-                value={inputs.savingsTarget}
-                onChange={(e) => handleInputChange('savingsTarget', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-amber-400 focus:outline-none text-lg"
-                min="500000"
-                step="100000"
-              />
-              <div className="text-xs text-gray-500">将来の貯金目標</div>
-            </div>
+        .income-label {
+            color: #6b7280;
+            font-size: 1rem;
+        }
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">目標期間（ヶ月）</label>
-              <select
-                value={inputs.targetPeriod}
-                onChange={(e) => handleInputChange('targetPeriod', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-amber-400 focus:outline-none text-lg"
-              >
-                <option value={6}>6ヶ月</option>
-                <option value={12}>1年</option>
-                <option value={24}>2年</option>
-                <option value={36}>3年</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        .income-breakdown {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-top: 0.5rem;
+        }
 
-        {/* 結果表示セクション */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* 月収シミュレーション */}
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <DollarSign className="mr-2 text-green-500" />
-              月収シミュレーション
-            </h3>
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+        .stat-value.positive {
+            color: #059669;
+        }
+
+        .stat-value.negative {
+            color: #dc2626;
+        }
+
+        .alert {
+            padding: 0.75rem;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .alert-text {
+            color: #92400e;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 1rem;
+            background: #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.5rem;
+        }
+
+        .progress-text {
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .level-display {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .level-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .level-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .level-description {
+            color: #6b7280;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .level-item {
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .level-bronze { background: #fed7aa; color: #ea580c; }
+        .level-silver { background: #f3f4f6; color: #6b7280; }
+        .level-gold { background: #fef3c7; color: #d97706; }
+        .level-platinum { background: #f3e8ff; color: #8b5cf6; }
+
+        .motivation-box {
+            background: linear-gradient(135deg, #e9d5ff, #fce7f3);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .motivation-text {
+            color: #7c3aed;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .advice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .advice-card {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid;
+        }
+
+        .advice-income { background: #f0fdf4; border-color: #10b981; }
+        .advice-savings { background: #eff6ff; border-color: #3b82f6; }
+        .advice-balance { background: #f5f3ff; border-color: #8b5cf6; }
+        .advice-goals { background: #fff7ed; border-color: #f97316; }
+
+        .advice-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .advice-income .advice-title { color: #065f46; }
+        .advice-savings .advice-title { color: #1e3a8a; }
+        .advice-balance .advice-title { color: #5b21b6; }
+        .advice-goals .advice-title { color: #9a3412; }
+
+        .advice-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .advice-list li {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            color: #374151;
+        }
+
+        .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .btn-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .note {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
             
-            <div className="text-center mb-6">
-              <div className="text-4xl font-bold text-green-600 mb-2">
-                ¥{results.monthlyIncome?.toLocaleString()}
-              </div>
-              <div className="text-gray-600">予想月収</div>
-              <div className="text-sm text-gray-500 mt-1">
-                {inputs.dailyCount}本 × ¥{inputs.pricePerService?.toLocaleString()} × {inputs.workDaysPerMonth}日
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span>目標との差額</span>
-                <span className={`font-bold ${results.targetDifference < 0 ? 'text-green-600' : 'text-red-500'}`}>
-                  {results.targetDifference < 0 ? '+' : '-'}¥{Math.abs(results.targetDifference)?.toLocaleString()}
-                </span>
-              </div>
-
-              {results.targetDifference > 0 && (
-                <div className="p-3 bg-amber-50 border-l-4 border-amber-400">
-                  <p className="text-amber-800">
-                    💡 目標達成まで<strong>あと{results.neededServices}本</strong>必要です！
-                  </p>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                <span>達成率</span>
-                <span className="font-bold text-blue-600">{results.achievementRate?.toFixed(1)}%</span>
-              </div>
-
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div 
-                  className="bg-gradient-to-r from-green-400 to-blue-500 h-4 rounded-full transition-all duration-1000 flex items-center justify-end pr-2"
-                  style={{ width: `${Math.min(results.achievementRate, 100)}%` }}
-                >
-                  <span className="text-xs text-white font-bold">
-                    {results.achievementRate >= 10 ? `${results.achievementRate?.toFixed(0)}%` : ''}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* レベル・モチベーション */}
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <Award className="mr-2 text-purple-500" />
-              あなたのレベル
-            </h3>
-
-            <div className="text-center mb-6">
-              <div className="text-6xl mb-2">{levelInfo.icon}</div>
-              <div className="text-2xl font-bold mb-2" style={{ color: levelInfo.color }}>
-                {levelInfo.level}ランク
-              </div>
-              <div className="text-gray-600">現在の収入レベル</div>
-              
-              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                <div className="p-2 bg-orange-50 rounded">
-                  <div className="font-bold text-orange-600">ブロンズ</div>
-                  <div className="text-xs">〜40万</div>
-                </div>
-                <div className="p-2 bg-gray-50 rounded">
-                  <div className="font-bold text-gray-600">シルバー</div>
-                  <div className="text-xs">40-60万</div>
-                </div>
-                <div className="p-2 bg-yellow-50 rounded">
-                  <div className="font-bold text-yellow-600">ゴールド</div>
-                  <div className="text-xs">60-80万</div>
-                </div>
-                <div className="p-2 bg-purple-50 rounded">
-                  <div className="font-bold text-purple-600">プラチナ</div>
-                  <div className="text-xs">80万〜</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-lg mb-4">
-              <p className="text-center text-lg font-semibold text-purple-800">
-                {getMotivationMessage()}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>貯金目標まで</span>
-                <span>{results.savingsMonths}ヶ月</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-purple-400 to-pink-400 h-3 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min((results.monthlyIncome * results.savingsMonths / inputs.savingsTarget) * 100, 100)}%` }}
-                ></div>
-              </div>
-              <div className="text-xs text-gray-500 text-center">
-                年間貯金: ¥{(results.monthlyIncome * 12)?.toLocaleString()}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* グラフセクション */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* 年間収入推移 */}
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              📊 年間収入推移
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="month" 
-                  tick={{ fontSize: 12 }}
-                  axisLine={{ stroke: '#e0e0e0' }}
-                />
-                <YAxis 
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => `¥${(value / 10000).toFixed(0)}万`}
-                  axisLine={{ stroke: '#e0e0e0' }}
-                />
-                <Tooltip 
-                  formatter={(value, name) => [
-                    `¥${value.toLocaleString()}`, 
-                    name === 'income' ? '予想収入' : '目標金額'
-                  ]}
-                  labelStyle={{ color: '#374151' }}
-                  contentStyle={{ 
-                    backgroundColor: '#f9fafb', 
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Bar dataKey="income" fill="#F59E0B" name="予想収入" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="target" fill="#EF4444" opacity={0.7} name="目標金額" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="text-center text-sm text-gray-600 mt-2">
-              年収: ¥{results.yearlyIncome?.toLocaleString()}
-            </div>
-          </div>
-
-          {/* 累積貯金推移 */}
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              📈 貯金推移（5年計画）
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={yearlyProjection}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="year" 
-                  tick={{ fontSize: 12 }}
-                  axisLine={{ stroke: '#e0e0e0' }}
-                />
-                <YAxis 
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => `¥${(value / 10000).toFixed(0)}万`}
-                  axisLine={{ stroke: '#e0e0e0' }}
-                />
-                <Tooltip 
-                  formatter={(value) => [`¥${value.toLocaleString()}`, '累積貯金']}
-                  labelStyle={{ color: '#374151' }}
-                  contentStyle={{ 
-                    backgroundColor: '#f0fdf4', 
-                    border: '1px solid #dcfce7',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="savings" 
-                  stroke="#10B981" 
-                  strokeWidth={3}
-                  dot={{ fill: '#10B981', strokeWidth: 2, r: 6 }}
-                  activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 2, fill: '#ffffff' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-            <div className="text-center text-sm text-gray-600 mt-2">
-              5年後予想貯金: ¥{(results.monthlyIncome * 12 * 5)?.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-        {/* 収入内訳（円グラフ） */}
-        <div className="bg-white rounded-2xl shadow-xl p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            🥧 理想的な収入内訳（参考）
-          </h3>
-          <div className="grid md:grid-cols-2 gap-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={workStyleData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={120}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {workStyleData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => [`${value}%`, '']} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-col justify-center space-y-3">
-              {workStyleData.map((item, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{ backgroundColor: item.color }}
-                  ></div>
-                  <span className="text-sm font-medium">{item.name}</span>
-                  <span className="text-sm text-gray-500">{item.value}%</span>
-                </div>
-              ))}
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  💡 本指名を増やすことで安定した収入が期待できます
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 目標達成のためのアドバイス */}
-        <div className="bg-white rounded-2xl shadow-xl p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <Target className="mr-2 text-pink-500" />
-            目標達成のためのアドバイス
-          </h3>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="p-4 bg-green-50 border-l-4 border-green-400 rounded">
-                <h4 className="font-bold text-green-800 mb-2">📈 収入アップのコツ</h4>
-                <ul className="text-sm text-green-700 space-y-1">
-                  <li>• 本指名のお客様を大切にする</li>
-                  <li>• 接客スキルを磨き続ける</li>
-                  <li>• 出勤日数を安定させる</li>
-                  <li>• イベント時は積極的に参加</li>
-                </ul>
-              </div>
-              <div className="p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
-                <h4 className="font-bold text-blue-800 mb-2">💰 貯金のコツ</h4>
-                <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• 収入の20-30%を自動積立</li>
-                  <li>• 家計簿をつけて支出を管理</li>
-                  <li>• 将来の目標を明確にする</li>
-                  <li>• 投資についても勉強する</li>
-                </ul>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="p-4 bg-purple-50 border-l-4 border-purple-400 rounded">
-                <h4 className="font-bold text-purple-800 mb-2">⚖️ ワークライフバランス</h4>
-                <ul className="text-sm text-purple-700 space-y-1">
-                  <li>• 適度な休息を取る</li>
-                  <li>• 健康管理を怠らない</li>
-                  <li>• プライベートも充実させる</li>
-                  <li>• 将来のキャリアプランを考える</li>
-                </ul>
-              </div>
-              <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded">
-                <h4 className="font-bold text-orange-800 mb-2">🎯 目標設定のポイント</h4>
-                <ul className="text-sm text-orange-700 space-y-1">
-                  <li>• 現実的で達成可能な目標設定</li>
-                  <li>• 短期・中期・長期に分けて考える</li>
-                  <li>• 定期的に見直しを行う</li>
-                  <li>• 達成したらご褒美を設ける</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* アクションボタン */}
-        <div className="bg-white rounded-2xl shadow-xl p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">シミュレーション結果を活用</h3>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <button 
-              onClick={handleShare}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 flex items-center space-x-2"
-            >
-              <Share2 size={20} />
-              <span>📱 結果を共有</span>
-            </button>
-            <button 
-              onClick={handleSave}
-              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 flex items-center space-x-2"
-            >
-              <Save size={20} />
-              <span>💾 データ保存</span>
-            </button>
-            <button 
-              onClick={handlePrint}
-              className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 flex items-center space-x-2"
-            >
-              <Printer size={20} />
-              <span>🖨️ 印刷する</span>
-            </button>
-          </div>
-          <div className="text-center text-sm text-gray-500 mt-4">
-            ※ シミュレーション結果は参考値です。実際の収入を保証するものではありません。
-          </div>
-        </div>
-
-        {/* フッター */}
-        <div className="text-center text-gray-500 text-sm py-4">
-          <p>© 2025 キャスト収入プランシミュレーター - あなたの未来をサポート</p>
-        </div>
-      </div>
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .income-amount {
+                font-size: 2rem;
+            }
+            
+            .button-grid {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <div class="header">
+        <h1>💰 キャスト収入プランシミュレーター</h1>
+        <p>あなたの未来収入をシミュレーション！</p>
     </div>
-  );
-};
 
-export default CastIncomeSimulator;
+    <div class="container">
+        <!-- 入力セクション -->
+        <div class="card">
+            <h2>📈 収入設定</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="dailyCount">1日の平均本数</label>
+                    <input type="number" id="dailyCount" value="3" min="1" max="20">
+                    <small style="color: #6b7280;">1〜20本</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="pricePerService">1本あたりのバック額（円）</label>
+                    <input type="number" id="pricePerService" value="12000" min="1000" step="1000">
+                    <small style="color: #6b7280;">1,000円〜</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="workDays">月の出勤日数</label>
+                    <div class="slider-container">
+                        <input type="range" id="workDays" class="slider" value="15" min="5" max="30">
+                        <div class="slider-value" id="workDaysValue">15日</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="monthlyTarget">月の目標金額（円）</label>
+                    <input type="number" id="monthlyTarget" value="500000" min="100000" step="50000">
+                    <small style="color: #6b7280;">目標月収を入力</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="savingsTarget">貯金目標（円）</label>
+                    <input type="number" id="savingsTarget" value="3000000" min="500000" step="100000">
+                    <small style="color: #6b7280;">将来の貯金目標</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="targetPeriod">目標期間</label>
+                    <select id="targetPeriod">
+                        <option value="6">6ヶ月</option>
+                        <option value="12" selected>1年</option>
+                        <option value="24">2年</option>
+                        <option value="36">3年</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 結果表示セクション -->
+        <div class="results-grid">
+            <!-- 月収シミュレーション -->
+            <div class="result-card">
+                <h3>💵 月収シミュレーション</h3>
+                
+                <div class="income-display">
+                    <div class="income-amount" id="monthlyIncome">¥540,000</div>
+                    <div class="income-label">予想月収</div>
+                    <div class="income-breakdown" id="incomeBreakdown">3本 × ¥12,000 × 15日</div>
+                </div>
+
+                <div class="stat-row">
+                    <span>目標との差額</span>
+                    <span class="stat-value" id="targetDifference">+¥40,000</span>
+                </div>
+
+                <div id="alertBox" class="alert" style="display: none;">
+                    <p class="alert-text" id="alertText">💡 目標達成まであと●本必要です！</p>
+                </div>
+
+                <div class="stat-row">
+                    <span>達成率</span>
+                    <span class="stat-value" id="achievementRate">108.0%</span>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 100%;">
+                        <span class="progress-text" id="progressText">108%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- レベル・モチベーション -->
+            <div class="result-card">
+                <h3>🏆 あなたのレベル</h3>
+
+                <div class="level-display">
+                    <div class="level-icon" id="levelIcon">⭐</div>
+                    <div class="level-name" id="levelName" style="color: #f59e0b;">ゴールドランク</div>
+                    <div class="level-description">現在の収入レベル</div>
+                    
+                    <div class="level-grid">
+                        <div class="level-item level-bronze">
+                            <div style="font-weight: bold;">ブロンズ</div>
+                            <div>〜40万</div>
+                        </div>
+                        <div class="level-item level-silver">
+                            <div style="font-weight: bold;">シルバー</div>
+                            <div>40-60万</div>
+                        </div>
+                        <div class="level-item level-gold">
+                            <div style="font-weight: bold;">ゴールド</div>
+                            <div>60-80万</div>
+                        </div>
+                        <div class="level-item level-platinum">
+                            <div style="font-weight: bold;">プラチナ</div>
+                            <div>80万〜</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="motivation-box">
+                    <p class="motivation-text" id="motivationText">🎉 目標達成！素晴らしいペースです！</p>
+                </div>
+
+                <div class="stat-row">
+                    <span>貯金目標まで</span>
+                    <span id="savingsMonths">56ヶ月</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="savingsProgress" style="width: 21%; background: linear-gradient(90deg, #8b5cf6, #ec4899);"></div>
+                </div>
+                <div class="note">
+                    年間貯金: <span id="annualSavings">¥6,480,000</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- グラフセクション -->
+        <div class="chart-container">
+            <h3>📊 年間収入推移</h3>
+            <div class="chart-wrapper">
+                <canvas id="incomeChart"></canvas>
+            </div>
+            <div class="note">
+                年収: <span id="yearlyIncome">¥6,480,000</span>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>📈 貯金推移（5年計画）</h3>
+            <div class="chart-wrapper">
+                <canvas id="savingsChart"></canvas>
+            </div>
+            <div class="note">
+                5年後予想貯金: <span id="fiveYearSavings">¥32,400,000</span>
+            </div>
+        </div>
+
+        <!-- 目標達成のためのアドバイス -->
+        <div class="card">
+            <h3>🎯 目標達成のためのアドバイス</h3>
+            <div class="advice-grid">
+                <div class="advice-card advice-income">
+                    <h4 class="advice-title">📈 収入アップのコツ</h4>
+                    <ul class="advice-list">
+                        <li>• 本指名のお客様を大切にする</li>
+                        <li>• 接客スキルを磨き続ける</li>
+                        <li>• 出勤日数を安定させる</li>
+                        <li>• イベント時は積極的に参加</li>
+                    </ul>
+                </div>
+                <div class="advice-card advice-savings">
+                    <h4 class="advice-title">💰 貯金のコツ</h4>
+                    <ul class="advice-list">
+                        <li>• 収入の20-30%を自動積立</li>
+                        <li>• 家計簿をつけて支出を管理</li>
+                        <li>• 将来の目標を明確にする</li>
+                        <li>• 投資についても勉強する</li>
+                    </ul>
+                </div>
+                <div class="advice-card advice-balance">
+                    <h4 class="advice-title">⚖️ ワークライフバランス</h4>
+                    <ul class="advice-list">
+                        <li>• 適度な休息を取る</li>
+                        <li>• 健康管理を怠らない</li>
+                        <li>• プライベートも充実させる</li>
+                        <li>• 将来のキャリアプランを考える</li>
+                    </ul>
+                </div>
+                <div class="advice-card advice-goals">
+                    <h4 class="advice-title">🎯 目標設定のポイント</h4>
+                    <ul class="advice-list">
+                        <li>• 現実的で達成可能な目標設定</li>
+                        <li>• 短期・中期・長期に分けて考える</li>
+                        <li>• 定期的に見直しを行う</li>
+                        <li>• 達成したらご褒美を設ける</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="card">
+            <h3 style="text-align: center;">シミュレーション結果を活用</h3>
+            <div class="button-grid">
+                <button class="btn btn-blue" onclick="shareResults()">
+                    📱 結果を共有
+                </button>
+                <button class="btn btn-green" onclick="saveResults()">
+                    💾 データ保存
+                </button>
+                <button class="btn btn-purple" onclick="printResults()">
+                    🖨️ 印刷する
+                </button>
+            </div>
+            <div class="note">
+                ※ シミュレーション結果は参考値です。実際の収入を保証するものではありません。
+            </div>
+        </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="footer">
+        <p>© 2025 キャスト収入プランシミュレーター - あなたの未来をサポート</p>
+    </div>
+
+    <script>
+        // グローバル変数
+        let incomeChart, savingsChart;
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // イベントリスナーを設定
+            setupEventListeners();
+            // 初期計算
+            calculateResults();
+            // グラフ初期化
+            initCharts();
+        });
+
+        function setupEventListeners() {
+            const inputs = ['dailyCount', 'pricePerService', 'workDays', 'monthlyTarget', 'savingsTarget', 'targetPeriod'];
+            
+            inputs.forEach(id => {
+                const element = document.getElementById(id);
+                element.addEventListener('input', function() {
+                    if (id === 'workDays') {
+                        document.getElementById('workDaysValue').textContent = this.value + '日';
+                    }
+                    calculateResults();
+                    updateCharts();
+                });
+            });
+        }
+
+        function calculateResults() {
+            // 入力値を取得
+            const dailyCount = parseInt(document.getElementById('dailyCount').value) || 0;
+            const pricePerService = parseInt(document.getElementById('pricePerService').value) || 0;
+            const workDays = parseInt(document.getElementById('workDays').value) || 0;
+            const monthlyTarget = parseInt(document.getElementById('monthlyTarget').value) || 0;
+            const savingsTarget = parseInt(document.getElementById('savingsTarget').value) || 0;
+
+            // 計算
+            const monthlyIncome = dailyCount * pricePerService * workDays;
+            const yearlyIncome = monthlyIncome * 12;
+            const targetDifference = monthlyIncome - monthlyTarget;
+            const neededServices = Math.ceil((monthlyTarget - monthlyIncome) / pricePerService);
+            const savingsMonths = Math.ceil(savingsTarget / monthlyIncome);
+            const achievementRate = (monthlyIncome / monthlyTarget) * 100;
+
+            // 表示を更新
+            updateDisplay(monthlyIncome, yearlyIncome, targetDifference, neededServices, savingsMonths, achievementRate, dailyCount, pricePerService, workDays);
+        }
+
+        function updateDisplay(monthlyIncome, yearlyIncome, targetDifference, neededServices, savingsMonths, achievementRate, dailyCount, pricePerService, workDays) {
+            // 月収表示
+            document.getElementById('monthlyIncome').textContent = '¥' + monthlyIncome.toLocaleString();
+            document.getElementById('incomeBreakdown').textContent = `${dailyCount}本 × ¥${pricePerService.toLocaleString()} × ${workDays}日`;
+            
+            // 目標との差額
+            const diffElement = document.getElementById('targetDifference');
+            if (targetDifference >= 0) {
+                diffElement.textContent = '+¥' + targetDifference.toLocaleString();
+                diffElement.className = 'stat-value positive';
+                document.getElementById('alertBox').style.display = 'none';
+            } else {
+                diffElement.textContent = '-¥' + Math.abs(targetDifference).toLocaleString();
+                diffElement.className = 'stat-value negative';
+                document.getElementById('alertBox').style.display = 'block';
+                document.getElementById('alertText').textContent = `💡 目標達成まであと${neededServices}本必要です！`;
+            }
+
+            // 達成率
+            document.getElementById('achievementRate').textContent = achievementRate.toFixed(1) + '%';
+            
+            // プログレスバー
+            const progressWidth = Math.min(achievementRate, 100);
+            document.getElementById('progressFill').style.width = progressWidth + '%';
+            if (achievementRate >= 10) {
+                document.getElementById('progressText').textContent = achievementRate.toFixed(0) + '%';
+            } else {
+                document.getElementById('progressText').textContent = '';
+            }
+
+            // レベル情報
+            updateLevelInfo(monthlyIncome);
+
+            // モチベーションメッセージ
+            updateMotivationMessage(achievementRate);
+
+            // 貯金情報
+            document.getElementById('savingsMonths').textContent = savingsMonths + 'ヶ月';
+            document.getElementById('annualSavings').textContent = '¥' + (monthlyIncome * 12).toLocaleString();
+            
+            // 貯金プログレス
+            const savingsProgress = Math.min((monthlyIncome * 12 / parseInt(document.getElementById('savingsTarget').value)) * 100, 100);
+            document.getElementById('savingsProgress').style.width = savingsProgress + '%';
+
+            // 年収表示
+            document.getElementById('yearlyIncome').textContent = '¥' + yearlyIncome.toLocaleString();
+            document.getElementById('fiveYearSavings').textContent = '¥' + (yearlyIncome * 5).toLocaleString();
+        }
+
+        function updateLevelInfo(monthlyIncome) {
+            let level, color, icon;
+            
+            if (monthlyIncome >= 800000) {
+                level = 'プラチナ';
+                color = '#8b5cf6';
+                icon = '👑';
+            } else if (monthlyIncome >= 600000) {
+                level = 'ゴールド';
+                color = '#f59e0b';
+                icon = '⭐';
+            } else if (monthlyIncome >= 400000) {
+                level = 'シルバー';
+                color = '#6b7280';
+                icon = '💎';
+            } else {
+                level = 'ブロンズ';
+                color = '#f97316';
+                icon = '🔥';
+            }
+
+            document.getElementById('levelIcon').textContent = icon;
+            document.getElementById('levelName').textContent = level + 'ランク';
+            document.getElementById('levelName').style.color = color;
+        }
+
+        function updateMotivationMessage(achievementRate) {
+            let message;
+            
+            if (achievementRate >= 100) {
+                message = '🎉 目標達成！素晴らしいペースです！';
+            } else if (achievementRate >= 80) {
+                message = '💪 あと少しで目標達成！頑張って！';
+            } else if (achievementRate >= 60) {
+                message = '📈 良いペースです！継続していきましょう';
+            } else {
+                message = '🚀 まだまだ伸びしろがあります！一緒に頑張りましょう';
+            }
+
+            document.getElementById('motivationText').textContent = message;
+        }
+
+        function initCharts() {
+            // 年間収入推移チャート
+            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+            const monthlyIncome = parseInt(document.getElementById('dailyCount').value) * 
+                                parseInt(document.getElementById('pricePerService').value) * 
+                                parseInt(document.getElementById('workDays').value);
+            const monthlyTarget = parseInt(document.getElementById('monthlyTarget').value);
+
+            incomeChart = new Chart(incomeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                    datasets: [{
+                        label: '予想収入',
+                        data: Array(12).fill(monthlyIncome),
+                        backgroundColor: '#f59e0b',
+                        borderColor: '#d97706',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }, {
+                        label: '目標金額',
+                        data: Array(12).fill(monthlyTarget),
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        borderColor: '#dc2626',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ¥' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '¥' + (value / 10000).toFixed(0) + '万';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 貯金推移チャート
+            const savingsCtx = document.getElementById('savingsChart').getContext('2d');
+            const yearlyIncome = monthlyIncome * 12;
+
+            savingsChart = new Chart(savingsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1年目', '2年目', '3年目', '4年目', '5年目'],
+                    datasets: [{
+                        label: '累積貯金',
+                        data: [
+                            yearlyIncome,
+                            yearlyIncome * 2,
+                            yearlyIncome * 3,
+                            yearlyIncome * 4,
+                            yearlyIncome * 5
+                        ],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '累積貯金: ¥' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '¥' + (value / 10000).toFixed(0) + '万';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            if (!incomeChart || !savingsChart) return;
+
+            // 現在の値を取得
+            const monthlyIncome = parseInt(document.getElementById('dailyCount').value) * 
+                                parseInt(document.getElementById('pricePerService').value) * 
+                                parseInt(document.getElementById('workDays').value);
+            const monthlyTarget = parseInt(document.getElementById('monthlyTarget').value);
+            const yearlyIncome = monthlyIncome * 12;
+
+            // 年間収入チャートを更新
+            incomeChart.data.datasets[0].data = Array(12).fill(monthlyIncome);
+            incomeChart.data.datasets[1].data = Array(12).fill(monthlyTarget);
+            incomeChart.update();
+
+            // 貯金推移チャートを更新
+            savingsChart.data.datasets[0].data = [
+                yearlyIncome,
+                yearlyIncome * 2,
+                yearlyIncome * 3,
+                yearlyIncome * 4,
+                yearlyIncome * 5
+            ];
+            savingsChart.update();
+        }
+
+        function shareResults() {
+            const monthlyIncome = document.getElementById('monthlyIncome').textContent;
+            const achievementRate = document.getElementById('achievementRate').textContent;
+            const levelName = document.getElementById('levelName').textContent;
+            
+            const shareText = `💰 収入シミュレーション結果\n月収: ${monthlyIncome}\n目標達成率: ${achievementRate}\nランク: ${levelName}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'キャスト収入プランシミュレーター',
+                    text: shareText
+                }).catch(console.error);
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('結果をクリップボードにコピーしました！');
+                }).catch(() => {
+                    alert('共有機能はサポートされていません。');
+                });
+            } else {
+                alert('共有機能はサポートされていません。');
+            }
+        }
+
+        function saveResults() {
+            const data = {
+                inputs: {
+                    dailyCount: document.getElementById('dailyCount').value,
+                    pricePerService: document.getElementById('pricePerService').value,
+                    workDays: document.getElementById('workDays').value,
+                    monthlyTarget: document.getElementById('monthlyTarget').value,
+                    savingsTarget: document.getElementById('savingsTarget').value,
+                    targetPeriod: document.getElementById('targetPeriod').value
+                },
+                results: {
+                    monthlyIncome: document.getElementById('monthlyIncome').textContent,
+                    achievementRate: document.getElementById('achievementRate').textContent,
+                    levelName: document.getElementById('levelName').textContent,
+                    savingsMonths: document.getElementById('savingsMonths').textContent
+                },
+                timestamp: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `income_simulation_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function printResults() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
