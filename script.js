@@ -679,35 +679,23 @@ function updateSavingsChart() {
 }
 
 /**
- * 結果の共有
+ * 結果の共有（改良版）
  */
 function shareResults() {
     try {
-        const monthlyIncome = document.getElementById('monthlyIncome')?.textContent || '¥0';
-        const achievementRate = document.getElementById('achievementRate')?.textContent || '0%';
-        const levelName = document.getElementById('levelName')?.textContent || 'ブロンズランク';
+        const inputs = getInputValues();
+        const results = performCalculations(inputs);
+        const levelInfo = getLevelInfo(results.monthlyIncome);
         
-        const shareText = `💰 収入シミュレーション結果
-月収: ${monthlyIncome}
-目標達成率: ${achievementRate}
-ランク: ${levelName}
-
-#キャスト収入シミュレーター #収入アップ #目標達成`;
+        // 詳細な共有テキストを作成
+        const shareData = createShareData(inputs, results, levelInfo);
         
-        if (navigator.share) {
-            navigator.share({
-                title: 'キャスト収入プランシミュレーター',
-                text: shareText,
-                url: window.location.href
-            }).then(() => {
-                console.log('共有成功');
-                showNotification('共有しました！', 'success');
-            }).catch(err => {
-                console.log('共有キャンセル:', err);
-                fallbackShare(shareText);
-            });
+        // モバイル対応の共有
+        if (navigator.share && isMobileDevice()) {
+            mobileShare(shareData);
         } else {
-            fallbackShare(shareText);
+            // デスクトップ版の共有オプション
+            showShareModal(shareData);
         }
     } catch (error) {
         console.error('共有エラー:', error);
@@ -716,91 +704,381 @@ function shareResults() {
 }
 
 /**
- * 共有のフォールバック処理
+ * 共有データの作成
  */
-function fallbackShare(text) {
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-            showNotification('結果をクリップボードにコピーしました！', 'success');
-        }).catch(() => {
-            showTextareaShare(text);
-        });
-    } else {
-        showTextareaShare(text);
+function createShareData(inputs, results, levelInfo) {
+    const currentDate = new Date().toLocaleDateString('ja-JP');
+    
+    return {
+        title: 'キャスト収入シミュレーション結果',
+        text: `💰 キャスト収入シミュレーション結果
+📅 ${currentDate}
+
+【基本設定】
+🔢 1日平均本数: ${inputs.dailyCount}本
+💰 バック額: ¥${inputs.pricePerService.toLocaleString()}
+📅 出勤日数: ${inputs.workDays}日/月
+🎯 目標金額: ¥${inputs.monthlyTarget.toLocaleString()}
+🏠 生活費: ¥${inputs.livingExpenses.toLocaleString()}
+
+【結果】
+💵 予想月収: ¥${results.monthlyIncome.toLocaleString()}
+📈 達成率: ${results.achievementRate.toFixed(1)}%
+🏆 ランク: ${levelInfo.level} ${levelInfo.icon}
+💰 貯金可能額: ¥${results.actualSavings.toLocaleString()}/月
+⏰ 貯金目標まで: ${results.savingsMonths}ヶ月
+
+【年間予測】
+📊 年収: ¥${results.yearlyIncome.toLocaleString()}
+💰 年間貯金: ¥${(results.actualSavings * 12).toLocaleString()}
+
+#キャスト収入シミュレーター #収入管理 #目標達成`,
+        url: window.location.href,
+        data: {
+            inputs,
+            results,
+            levelInfo,
+            timestamp: new Date().toISOString()
+        }
+    };
+}
+
+/**
+ * モバイルデバイス判定
+ */
+function isMobileDevice() {
+    return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+/**
+ * モバイル共有
+ */
+function mobileShare(shareData) {
+    navigator.share({
+        title: shareData.title,
+        text: shareData.text,
+        url: shareData.url
+    }).then(() => {
+        showNotification('共有しました！', 'success');
+    }).catch(err => {
+        console.log('共有キャンセル:', err);
+        showShareModal(shareData);
+    });
+}
+
+/**
+ * 共有モーダルの表示
+ */
+function showShareModal(shareData) {
+    const modal = createModal();
+    const content = document.createElement('div');
+    content.className = 'share-modal-content';
+    
+    content.innerHTML = `
+        <h3 style="margin-bottom: 1rem; color: #1f2937;">📱 結果を共有</h3>
+        
+        <div class="share-options">
+            <button class="share-btn share-copy" onclick="copyToClipboard('${escapeHtml(shareData.text)}')">
+                📋 テキストをコピー
+            </button>
+            
+            <button class="share-btn share-line" onclick="shareToLine('${escapeHtml(shareData.text)}')">
+                💬 LINEで共有
+            </button>
+            
+            <button class="share-btn share-twitter" onclick="shareToTwitter('${escapeHtml(shareData.text)}')">
+                🐦 Twitterで共有
+            </button>
+            
+            <button class="share-btn share-url" onclick="copyUrlWithParams()">
+                🔗 URLをコピー
+            </button>
+        </div>
+        
+        <div class="share-preview">
+            <h4>プレビュー:</h4>
+            <textarea readonly style="width: 100%; height: 200px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 0.5rem; font-size: 0.9rem;">${shareData.text}</textarea>
+        </div>
+        
+        <button class="btn btn-purple" onclick="closeModal()" style="margin-top: 1rem; width: 100%;">
+            閉じる
+        </button>
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+/**
+ * データ保存（改良版 - 複数形式対応）
+ */
+function saveResults() {
+    const modal = createModal();
+    const content = document.createElement('div');
+    content.className = 'save-modal-content';
+    
+    content.innerHTML = `
+        <h3 style="margin-bottom: 1rem; color: #1f2937;">💾 データ保存</h3>
+        
+        <div class="save-options">
+            <button class="save-btn save-pdf" onclick="saveToPDF()">
+                📄 PDFで保存
+            </button>
+            
+            <button class="save-btn save-image" onclick="saveAsImage()">
+                🖼️ 画像で保存
+            </button>
+            
+            <button class="save-btn save-excel" onclick="saveToExcel()">
+                📊 Excelで保存
+            </button>
+            
+            <button class="save-btn save-json" onclick="saveAsJSON()">
+                💾 データファイル(JSON)
+            </button>
+            
+            <button class="save-btn save-txt" onclick="saveAsText()">
+                📝 テキストファイル
+            </button>
+        </div>
+        
+        <button class="btn btn-purple" onclick="closeModal()" style="margin-top: 1rem; width: 100%;">
+            閉じる
+        </button>
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+/**
+ * PDFで保存
+ */
+function saveToPDF() {
+    try {
+        const inputs = getInputValues();
+        const results = performCalculations(inputs);
+        const levelInfo = getLevelInfo(results.monthlyIncome);
+        
+        // 印刷用のスタイルを適用
+        const printContent = createPrintableContent(inputs, results, levelInfo);
+        
+        // 新しいウィンドウで開いて印刷
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>収入シミュレーション結果</title>
+                <style>
+                    body { font-family: 'Segoe UI', sans-serif; margin: 20px; color: #333; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+                    .section h3 { color: #f59e0b; margin-top: 0; }
+                    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+                    .item { padding: 8px; background: #f8f9fa; border-radius: 4px; }
+                    .highlight { background: #fef3c7; font-weight: bold; }
+                    @media print {
+                        body { margin: 0; }
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${printContent}
+                <div class="no-print" style="text-align: center; margin-top: 20px;">
+                    <button onclick="window.print()" style="padding: 10px 20px; background: #f59e0b; color: white; border: none; border-radius: 5px; cursor: pointer;">PDFで保存</button>
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        
+        closeModal();
+        showNotification('PDF保存用ウィンドウを開きました', 'success');
+    } catch (error) {
+        console.error('PDF保存エラー:', error);
+        showError('PDF保存に失敗しました');
     }
 }
 
 /**
- * テキストエリアでの共有表示
+ * 印刷可能なコンテンツの作成
  */
-function showTextareaShare(text) {
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
+function createPrintableContent(inputs, results, levelInfo) {
+    const currentDate = new Date().toLocaleDateString('ja-JP');
+    
+    return `
+        <div class="header">
+            <h1>💰 キャスト収入シミュレーション結果</h1>
+            <p>作成日: ${currentDate}</p>
+        </div>
+        
+        <div class="section">
+            <h3>📊 基本設定</h3>
+            <div class="grid">
+                <div class="item">1日平均本数: ${inputs.dailyCount}本</div>
+                <div class="item">バック額: ¥${inputs.pricePerService.toLocaleString()}</div>
+                <div class="item">出勤日数: ${inputs.workDays}日/月</div>
+                <div class="item">目標金額: ¥${inputs.monthlyTarget.toLocaleString()}</div>
+                <div class="item">生活費: ¥${inputs.livingExpenses.toLocaleString()}</div>
+                <div class="item">貯金目標: ¥${inputs.savingsTarget.toLocaleString()}</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3>💵 収入結果</h3>
+            <div class="grid">
+                <div class="item highlight">予想月収: ¥${results.monthlyIncome.toLocaleString()}</div>
+                <div class="item highlight">達成率: ${results.achievementRate.toFixed(1)}%</div>
+                <div class="item">ランク: ${levelInfo.level}</div>
+                <div class="item">生活費差引後: ¥${results.disposableIncome.toLocaleString()}</div>
+                <div class="item">月間貯金可能額: ¥${results.actualSavings.toLocaleString()}</div>
+                <div class="item">貯金目標まで: ${results.savingsMonths}ヶ月</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3>📈 年間予測</h3>
+            <div class="grid">
+                <div class="item highlight">年収: ¥${results.yearlyIncome.toLocaleString()}</div>
+                <div class="item highlight">年間貯金: ¥${(results.actualSavings * 12).toLocaleString()}</div>
+                <div class="item">5年後貯金: ¥${(results.actualSavings * 60).toLocaleString()}</div>
+                <div class="item">目標達成まで: ${results.savingsMonths}ヶ月</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3>🎯 アドバイス</h3>
+            <ul>
+                <li>写メ日記を毎日更新して認知度UP</li>
+                <li>オキニトークで距離を縮める</li>
+                <li>キテネで来店を促進する</li>
+                <li>本指名のお客様を大切にする</li>
+                <li>出勤日数を安定させる</li>
+            </ul>
+        </div>
     `;
-    
-    const content = document.createElement('div');
-    content.style.cssText = `
-        background: white;
-        padding: 2rem;
-        border-radius: 1rem;
-        max-width: 90%;
-        max-height: 90%;
-    `;
-    
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.cssText = `
-        width: 100%;
-        height: 200px;
-        border: 1px solid #ccc;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        font-family: inherit;
-    `;
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '閉じる';
-    closeBtn.style.cssText = `
-        margin-top: 1rem;
-        padding: 0.5rem 1rem;
-        background: #f59e0b;
-        color: white;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-    `;
-    
-    closeBtn.onclick = () => document.body.removeChild(modal);
-    modal.onclick = (e) => e.target === modal && document.body.removeChild(modal);
-    
-    content.appendChild(textarea);
-    content.appendChild(closeBtn);
-    modal.appendChild(content);
-    document.body.appendChild(modal);
-    
-    textarea.select();
 }
 
 /**
- * データの保存
+ * 画像として保存
  */
-function saveResults() {
+function saveAsImage() {
+    try {
+        // Canvas要素を作成してチャートを含むスクリーンショットを作成
+        html2canvas(document.body, {
+            scale: 2,
+            useCORS: true,
+            scrollX: 0,
+            scrollY: 0
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `income_simulation_${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            
+            showNotification('画像として保存しました！', 'success');
+        });
+        
+        closeModal();
+    } catch (error) {
+        console.error('画像保存エラー:', error);
+        // html2canvasが利用できない場合のフォールバック
+        window.print();
+        showNotification('印刷画面を開きました（画像保存の代替）', 'info');
+    }
+}
+
+/**
+ * Excelファイルとして保存
+ */
+function saveToExcel() {
+    try {
+        const inputs = getInputValues();
+        const results = performCalculations(inputs);
+        const levelInfo = getLevelInfo(results.monthlyIncome);
+        
+        // CSV形式で保存（Excelで開ける）
+        const csvContent = createCSVContent(inputs, results, levelInfo);
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `income_simulation_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        
+        closeModal();
+        showNotification('Excelファイルとして保存しました！', 'success');
+    } catch (error) {
+        console.error('Excel保存エラー:', error);
+        showError('Excel保存に失敗しました');
+    }
+}
+
+/**
+ * CSV形式のコンテンツ作成
+ */
+function createCSVContent(inputs, results, levelInfo) {
+    const currentDate = new Date().toLocaleDateString('ja-JP');
+    
+    return `キャスト収入シミュレーション結果,${currentDate}
+
+基本設定
+項目,値
+1日平均本数,${inputs.dailyCount}本
+バック額,${inputs.pricePerService}円
+出勤日数,${inputs.workDays}日/月
+目標金額,${inputs.monthlyTarget}円
+生活費,${inputs.livingExpenses}円
+貯金目標,${inputs.savingsTarget}円
+
+結果
+項目,値
+予想月収,${results.monthlyIncome}円
+達成率,${results.achievementRate.toFixed(1)}%
+ランク,${levelInfo.level}
+生活費差引後,${results.disposableIncome}円
+月間貯金可能額,${results.actualSavings}円
+貯金目標まで,${results.savingsMonths}ヶ月
+
+年間予測
+項目,値
+年収,${results.yearlyIncome}円
+年間貯金,${results.actualSavings * 12}円
+5年後貯金,${results.actualSavings * 60}円`;
+}
+
+/**
+ * テキストファイルとして保存
+ */
+function saveAsText() {
+    try {
+        const shareData = createShareData(getInputValues(), performCalculations(getInputValues()), getLevelInfo(performCalculations(getInputValues()).monthlyIncome));
+        
+        const blob = new Blob([shareData.text], { type: 'text/plain;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `income_simulation_${new Date().toISOString().split('T')[0]}.txt`;
+        link.click();
+        
+        closeModal();
+        showNotification('テキストファイルとして保存しました！', 'success');
+    } catch (error) {
+        console.error('テキスト保存エラー:', error);
+        showError('テキスト保存に失敗しました');
+    }
+}
+
+/**
+ * JSONファイルとして保存（既存の機能を改良）
+ */
+function saveAsJSON() {
     try {
         const inputs = getInputValues();
         const results = performCalculations(inputs);
         
         const data = {
-            version: '1.0',
+            version: '2.0',
             timestamp: new Date().toISOString(),
             inputs: inputs,
             results: {
@@ -810,11 +1088,13 @@ function saveResults() {
                 neededServices: results.neededServices,
                 savingsMonths: results.savingsMonths,
                 achievementRate: results.achievementRate,
+                disposableIncome: results.disposableIncome,
+                actualSavings: results.actualSavings,
                 levelInfo: getLevelInfo(results.monthlyIncome)
             },
             calculations: {
                 breakdown: `${inputs.dailyCount}本 × ¥${inputs.pricePerService.toLocaleString()} × ${inputs.workDays}日`,
-                fiveYearSavings: results.yearlyIncome * 5
+                fiveYearSavings: results.actualSavings * 60
             }
         };
         
@@ -832,11 +1112,83 @@ function saveResults() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        showNotification('データを保存しました！', 'success');
-        console.log('データ保存完了');
+        closeModal();
+        showNotification('データファイルを保存しました！', 'success');
     } catch (error) {
-        console.error('保存エラー:', error);
-        showError('保存に失敗しました');
+        console.error('JSON保存エラー:', error);
+        showError('データ保存に失敗しました');
+    }
+}
+
+/**
+ * 共有用ヘルパー関数
+ */
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('クリップボードにコピーしました！', 'success');
+        closeModal();
+    }).catch(() => {
+        showError('コピーに失敗しました');
+    });
+}
+
+function shareToLine(text) {
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(window.location.href)}&text=${encodedText}`, '_blank');
+    closeModal();
+}
+
+function shareToTwitter(text) {
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodeURIComponent(window.location.href)}`, '_blank');
+    closeModal();
+}
+
+function copyUrlWithParams() {
+    updateURL();
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        showNotification('設定付きURLをコピーしました！', 'success');
+        closeModal();
+    }).catch(() => {
+        showError('URLコピーに失敗しました');
+    });
+}
+
+function escapeHtml(text) {
+    return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+/**
+ * モーダル作成ヘルパー
+ */
+function createModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+    };
+    
+    return modal;
+}
+
+function closeModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        document.body.removeChild(modal);
     }
 }
 
