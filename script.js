@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
  * イベントリスナーの設定
  */
 function setupEventListeners() {
-    const inputIds = ['dailyCount', 'pricePerService', 'workDays', 'monthlyTarget', 'savingsTarget', 'targetPeriod'];
+    const inputIds = ['dailyCount', 'pricePerService', 'workDays', 'monthlyTarget', 'savingsTarget', 'targetPeriod', 'livingExpenses'];
     
     inputIds.forEach(id => {
         const element = document.getElementById(id);
@@ -106,7 +106,8 @@ function getInputValues() {
         workDays: parseInt(document.getElementById('workDays')?.value) || 0,
         monthlyTarget: parseInt(document.getElementById('monthlyTarget')?.value) || 0,
         savingsTarget: parseInt(document.getElementById('savingsTarget')?.value) || 0,
-        targetPeriod: parseInt(document.getElementById('targetPeriod')?.value) || 12
+        targetPeriod: parseInt(document.getElementById('targetPeriod')?.value) || 12,
+        livingExpenses: parseInt(document.getElementById('livingExpenses')?.value) || 0
     };
 }
 
@@ -118,7 +119,9 @@ function performCalculations(inputs) {
     const yearlyIncome = monthlyIncome * 12;
     const targetDifference = monthlyIncome - inputs.monthlyTarget;
     const neededServices = Math.max(0, Math.ceil((inputs.monthlyTarget - monthlyIncome) / inputs.pricePerService));
-    const savingsMonths = monthlyIncome > 0 ? Math.ceil(inputs.savingsTarget / monthlyIncome) : 0;
+    const disposableIncome = monthlyIncome - inputs.livingExpenses;
+    const actualSavings = Math.max(0, disposableIncome);
+    const savingsMonths = actualSavings > 0 ? Math.ceil(inputs.savingsTarget / actualSavings) : 0;
     const achievementRate = inputs.monthlyTarget > 0 ? (monthlyIncome / inputs.monthlyTarget) * 100 : 0;
     
     return {
@@ -127,7 +130,9 @@ function performCalculations(inputs) {
         targetDifference,
         neededServices,
         savingsMonths,
-        achievementRate
+        achievementRate,
+        disposableIncome,
+        actualSavings
     };
 }
 
@@ -252,11 +257,11 @@ function updateLevelInfo(monthlyIncome) {
  * レベル情報の取得
  */
 function getLevelInfo(monthlyIncome) {
-    if (monthlyIncome >= 800000) {
+    if (monthlyIncome >= 1600000) {
         return { level: 'プラチナ', color: '#8b5cf6', icon: '👑' };
-    } else if (monthlyIncome >= 600000) {
+    } else if (monthlyIncome >= 1200000) {
         return { level: 'ゴールド', color: '#f59e0b', icon: '⭐' };
-    } else if (monthlyIncome >= 400000) {
+    } else if (monthlyIncome >= 800000) {
         return { level: 'シルバー', color: '#6b7280', icon: '💎' };
     } else {
         return { level: 'ブロンズ', color: '#f97316', icon: '🔥' };
@@ -293,18 +298,29 @@ function updateSavingsInfo(inputs, results) {
     const savingsMonthsEl = document.getElementById('savingsMonths');
     const annualSavingsEl = document.getElementById('annualSavings');
     const savingsProgress = document.getElementById('savingsProgress');
+    const disposableIncomeEl = document.getElementById('disposableIncome');
+    const actualSavingsEl = document.getElementById('actualSavings');
     
     if (savingsMonthsEl) {
-        savingsMonthsEl.textContent = results.savingsMonths + 'ヶ月';
+        savingsMonthsEl.textContent = results.savingsMonths > 0 ? results.savingsMonths + 'ヶ月' : '要見直し';
     }
     
     if (annualSavingsEl) {
-        annualSavingsEl.textContent = '¥' + (results.monthlyIncome * 12).toLocaleString();
+        annualSavingsEl.textContent = '¥' + (results.actualSavings * 12).toLocaleString();
     }
     
-    if (savingsProgress) {
-        const progressPercentage = Math.min((results.yearlyIncome / inputs.savingsTarget) * 100, 100);
-        savingsProgress.style.width = progressPercentage + '%';
+    if (disposableIncomeEl) {
+        disposableIncomeEl.textContent = '¥' + results.disposableIncome.toLocaleString();
+        disposableIncomeEl.className = results.disposableIncome >= 0 ? 'stat-value positive' : 'stat-value negative';
+    }
+    
+    if (actualSavingsEl) {
+        actualSavingsEl.textContent = '¥' + results.actualSavings.toLocaleString();
+    }
+    
+    if (savingsProgress && inputs.savingsTarget > 0) {
+        const progressPercentage = Math.min((results.actualSavings * 12 / inputs.savingsTarget) * 100, 100);
+        savingsProgress.style.width = Math.max(progressPercentage, 0) + '%';
     }
 }
 
@@ -1003,6 +1019,7 @@ function resetSettings() {
         document.getElementById('monthlyTarget').value = 500000;
         document.getElementById('savingsTarget').value = 3000000;
         document.getElementById('targetPeriod').value = 12;
+        document.getElementById('livingExpenses').value = 200000;
         
         updateSliderValue();
         calculateResults();
@@ -1028,7 +1045,8 @@ function loadFromURL() {
         'days': 'workDays',
         'target': 'monthlyTarget',
         'savings': 'savingsTarget',
-        'period': 'targetPeriod'
+        'period': 'targetPeriod',
+        'expenses': 'livingExpenses'
     };
     
     Object.keys(paramMap).forEach(paramKey => {
@@ -1063,6 +1081,7 @@ function updateURL() {
     params.set('target', inputs.monthlyTarget);
     params.set('savings', inputs.savingsTarget);
     params.set('period', inputs.targetPeriod);
+    params.set('expenses', inputs.livingExpenses);
     
     const newURL = window.location.pathname + '?' + params.toString();
     window.history.replaceState({}, '', newURL);
@@ -1226,7 +1245,7 @@ function initComplete() {
     setupErrorHandling();
     
     // デバウンス版の計算を既存のイベントリスナーに適用
-    const inputs = ['dailyCount', 'pricePerService', 'workDays', 'monthlyTarget', 'savingsTarget', 'targetPeriod'];
+    const inputs = ['dailyCount', 'pricePerService', 'workDays', 'monthlyTarget', 'savingsTarget', 'targetPeriod', 'livingExpenses'];
     inputs.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
