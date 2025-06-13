@@ -1,4 +1,153 @@
-/* ==========================================
+/* モーダル関連のスタイル */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.share-modal-content,
+.save-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.share-options,
+.save-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.share-btn,
+.save-btn {
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    color: #374151;
+}
+
+.share-btn:hover,
+.save-btn:hover {
+    background: #f3f4f6;
+    border-color: #f59e0b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.share-copy { border-color: #3b82f6; color: #3b82f6; }
+.share-line { border-color: #10b981; color: #10b981; }
+.share-twitter { border-color: #1da1f2; color: #1da1f2; }
+.share-url { border-color: #8b5cf6; color: #8b5cf6; }
+
+.save-pdf { border-color: #ef4444; color: #ef4444; }
+.save-image { border-color: #f59e0b; color: #f59e0b; }
+.save-excel { border-color: #10b981; color: #10b981; }
+.save-json { border-color: #6366f1; color: #6366f1; }
+.save-txt { border-color: #8b5cf6; color: #8b5cf6; }
+
+.share-preview {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+}
+
+.share-preview h4 {
+    margin-bottom: 0.5rem;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.share-preview textarea {
+    width: 100%;
+    height: 200px;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .share-modal-content,
+    .save-modal-content {
+        padding: 1.5rem;
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+        max-height: calc(100% - 2rem);
+    }
+    
+    .share-options,
+    .save-options {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .share-btn,
+    .save-btn {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .share-preview textarea {
+        height: 150px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .share-modal-content,
+    .save-modal-content {
+        padding: 1rem;
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+        max-height: calc(100% - 1rem);
+    }
+    
+    .share-preview textarea {
+        height: 120px;
+    }
+}/* ==========================================
    キャスト収入プランシミュレーター - スタイルシート
    ========================================== */
 
