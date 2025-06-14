@@ -18,18 +18,6 @@
     to { opacity: 1; }
 }
 
-.share-modal-content,
-.save-modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 1rem;
-    max-width: 90%;
-    max-height: 90%;
-    overflow-y: auto;
-    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
-    animation: slideUp 0.3s ease;
-}
-
 @keyframes slideUp {
     from {
         opacity: 0;
@@ -41,17 +29,29 @@
     }
 }
 
+.share-modal-content,
+.save-modal-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
 .share-options,
 .save-options {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .share-btn,
 .save-btn {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     border: 2px solid #e5e7eb;
     border-radius: 0.5rem;
     background: white;
@@ -66,24 +66,12 @@
 .share-btn:hover,
 .save-btn:hover {
     background: #f3f4f6;
-    border-color: #f59e0b;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.share-copy { border-color: #3b82f6; color: #3b82f6; }
-.share-line { border-color: #10b981; color: #10b981; }
-.share-twitter { border-color: #1da1f2; color: #1da1f2; }
-.share-url { border-color: #8b5cf6; color: #8b5cf6; }
-
-.save-pdf { border-color: #ef4444; color: #ef4444; }
-.save-image { border-color: #f59e0b; color: #f59e0b; }
-.save-excel { border-color: #10b981; color: #10b981; }
-.save-json { border-color: #6366f1; color: #6366f1; }
-.save-txt { border-color: #8b5cf6; color: #8b5cf6; }
-
 .share-preview {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     padding: 1rem;
     background: #f9fafb;
     border-radius: 0.5rem;
@@ -105,6 +93,36 @@
     line-height: 1.4;
     resize: vertical;
     font-family: inherit;
+}
+
+/* モーダルのレスポンシブ対応 */
+@media (max-width: 768px) {
+    .share-modal-content,
+    .save-modal-content {
+        padding: 1rem;
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+        max-height: calc(100% - 2rem);
+    }
+    
+    .share-preview textarea {
+        height: 150px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .share-modal-content,
+    .save-modal-content {
+        padding: 1rem;
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+        max-height: calc(100% - 1rem);
+    }
+    
+    .share-preview textarea {
+        height: 120px;
+    }
 }
 
 /* レスポンシブ対応 */
