@@ -22,13 +22,13 @@
                 <div class="input-group">
                     <label for="dailyCount">1日の平均本数</label>
                     <input type="number" id="dailyCount" value="3" min="1" max="20">
-                    <small style="color: #6b7280;">1〜20本</small>
+                    <small>1〜20本</small>
                 </div>
 
                 <div class="input-group">
                     <label for="pricePerService">1本あたりのバック額（円）</label>
                     <input type="number" id="pricePerService" value="12000" min="1000" step="1000">
-                    <small style="color: #6b7280;">1,000円〜</small>
+                    <small>1,000円〜</small>
                 </div>
 
                 <div class="input-group">
@@ -42,29 +42,19 @@
                 <div class="input-group">
                     <label for="monthlyTarget">月の目標金額（円）</label>
                     <input type="number" id="monthlyTarget" value="500000" min="100000" step="50000">
-                    <small style="color: #6b7280;">目標月収を入力</small>
+                    <small>目標月収を入力</small>
                 </div>
 
                 <div class="input-group">
                     <label for="livingExpenses">月の生活費（円）</label>
                     <input type="number" id="livingExpenses" value="200000" min="50000" step="10000">
-                    <small style="color: #6b7280;">最低限必要な生活費</small>
+                    <small>最低限必要な生活費</small>
                 </div>
 
                 <div class="input-group">
                     <label for="savingsTarget">貯金目標（円）</label>
                     <input type="number" id="savingsTarget" value="3000000" min="500000" step="100000">
-                    <small style="color: #6b7280;">将来の貯金目標</small>
-                </div>
-
-                <div class="input-group">
-                    <label for="targetPeriod">目標期間</label>
-                    <select id="targetPeriod">
-                        <option value="6">6ヶ月</option>
-                        <option value="12" selected>1年</option>
-                        <option value="24">2年</option>
-                        <option value="36">3年</option>
-                    </select>
+                    <small>将来の貯金目標</small>
                 </div>
             </div>
         </div>
@@ -118,19 +108,19 @@
                     
                     <div class="level-grid">
                         <div class="level-item level-bronze">
-                            <div style="font-weight: bold;">ブロンズ</div>
+                            <div>ブロンズ</div>
                             <div>〜80万</div>
                         </div>
                         <div class="level-item level-silver">
-                            <div style="font-weight: bold;">シルバー</div>
+                            <div>シルバー</div>
                             <div>80-120万</div>
                         </div>
                         <div class="level-item level-gold">
-                            <div style="font-weight: bold;">ゴールド</div>
+                            <div>ゴールド</div>
                             <div>120-160万</div>
                         </div>
                         <div class="level-item level-platinum">
-                            <div style="font-weight: bold;">プラチナ</div>
+                            <div>プラチナ</div>
                             <div>160万〜</div>
                         </div>
                     </div>
@@ -226,26 +216,18 @@
             </div>
         </div>
 
-        <!-- アクションボタン -->
-        <div class="card">
-            <h3 style="text-align: center;">シミュレーション結果を活用</h3>
-            <div class="button-grid">
-                <button class="btn btn-blue" onclick="shareResults()">
-                    📱 結果を共有
-                </button>
-                <button class="btn btn-green" onclick="saveResults()">
-                    💾 データ保存
-                </button>
-                <button class="btn btn-purple" onclick="printResults()">
-                    🖨️ 印刷する
-                </button>
-            </div>
-            <div class="note">
-                ※ シミュレーション結果は参考値です。実際の収入を保証するものではありません。
-            </div>
-            <div class="note" style="margin-top: 0.5rem;">
-                📱 簡単に共有・保存できます！
-            </div>
+        <!-- データ保存ボタン -->
+        <div class="save-section">
+            <h3>💾 シミュレーション結果を保存</h3>
+            <button class="save-main-btn" onclick="openSaveModal()">
+                💾 データ保存
+            </button>
+            <p class="save-description">PDF・Excel・テキスト形式で保存できます</p>
+        </div>
+
+        <!-- 免責事項 -->
+        <div class="disclaimer">
+            <p>※ シミュレーション結果は参考値です。実際の収入を保証するものではありません。</p>
         </div>
     </div>
 
