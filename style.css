@@ -13,6 +13,17 @@
     animation: fadeIn 0.3s ease;
 }
 
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -31,32 +42,41 @@
 
 .save-modal-content {
     background: white;
-    padding: 1.5rem;
+    padding: 2rem;
     border-radius: 1rem;
-    max-width: 500px;
+    max-width: 480px;
     width: 90%;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
-    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
     animation: slideUp 0.3s ease;
 }
 
-.save-modal-content button {
-    transition: all 0.3s ease;
+.save-option-btn {
+    transition: all 0.3s ease !important;
 }
 
-.save-modal-content button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.save-option-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    background: #f8fafc !important;
 }
 
 /* モーダルのレスポンシブ対応 */
 @media (max-width: 768px) {
     .save-modal-content {
-        padding: 1rem;
+        padding: 1.5rem;
         margin: 1rem;
         max-width: calc(100% - 2rem);
         max-height: calc(100% - 2rem);
+    }
+    
+    .save-option-btn {
+        padding: 1rem !important;
+    }
+    
+    .save-option-btn div:first-child {
+        font-size: 1.25rem !important;
     }
 }
 
@@ -66,6 +86,18 @@
         margin: 0.5rem;
         max-width: calc(100% - 1rem);
         max-height: calc(100% - 1rem);
+    }
+    
+    .save-option-btn {
+        padding: 0.875rem !important;
+    }
+    
+    .save-option-btn div:nth-child(2) {
+        font-size: 1rem !important;
+    }
+    
+    .save-option-btn div:nth-child(3) {
+        font-size: 0.8rem !important;
     }
 }
 
